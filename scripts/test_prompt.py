@@ -1,8 +1,8 @@
 """
 Prompt test script — Person B
 
-Tests either prompt file directly against the configured LLM provider,
-without needing Person A's backend to be running.
+Tests either prompt file directly against Groq, without needing the
+FastAPI backend to be running.
 
 Usage
 -----
@@ -17,22 +17,9 @@ Usage
 
 Environment variables (put in .env or export before running)
 -------------------------------------------------------------
-  LLM_PROVIDER      openai | anthropic | watsonx   (default: openai)
-
-  # OpenAI / any OpenAI-compatible endpoint:
-  OPENAI_API_KEY    your key
-  OPENAI_MODEL      model name (default: gpt-4o-mini)
-  OPENAI_BASE_URL   override base URL for compatible APIs (optional)
-
-  # Anthropic:
-  ANTHROPIC_API_KEY your key
-  ANTHROPIC_MODEL   model name (default: claude-3-5-haiku-latest)
-
-  # IBM watsonx.ai:
-  WATSONX_API_KEY   your IBM Cloud API key
-  WATSONX_PROJECT_ID your watsonx project id
-  WATSONX_URL       service URL (default: https://us-south.ml.cloud.ibm.com)
-  WATSONX_MODEL     model id (default: ibm/granite-3-3-8b-instruct)
+  LLM_PROVIDER=groq          (required; project is Groq-only)
+  GROQ_API_KEY               your Groq API key (console.groq.com)
+  GROQ_MODEL_ID              model id (default: openai/gpt-oss-120b)
 
 Output
 ------
@@ -48,6 +35,7 @@ import argparse
 import json
 import os
 import pathlib
+import re
 import sys
 import textwrap
 import time
@@ -71,6 +59,9 @@ load_dotenv(ROOT / ".env")
 # ---------------------------------------------------------------------------
 
 PROMPT_DIR = ROOT / "backend" / "prompts"
+
+_GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+_DEFAULT_MODEL = "openai/gpt-oss-120b"
 
 
 def _load_prompt(path: pathlib.Path) -> tuple[str, str]:
@@ -107,19 +98,18 @@ def _load_prompt(path: pathlib.Path) -> tuple[str, str]:
 
 
 # ---------------------------------------------------------------------------
-# Provider implementations
+# Groq provider (only supported LLM)
 # ---------------------------------------------------------------------------
 
 
-def _call_openai(system: str, user: str) -> str:
-    api_key = os.environ["OPENAI_API_KEY"]
-    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+def _call_groq(system: str, user: str) -> str:
+    api_key = os.environ["GROQ_API_KEY"]
+    model = os.getenv("GROQ_MODEL_ID", _DEFAULT_MODEL)
 
     payload = {
         "model": model,
         "temperature": 0.2,
-        "response_format": {"type": "json_object"},
+        "max_tokens": 4096,
         "messages": [
             {"role": "system", "content": system},
             {"role": "user", "content": user},
@@ -127,95 +117,26 @@ def _call_openai(system: str, user: str) -> str:
     }
     with httpx.Client(timeout=120) as client:
         r = client.post(
-            f"{base_url}/chat/completions",
+            _GROQ_API_URL,
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
             json=payload,
         )
-    r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"]
-
-
-def _call_anthropic(system: str, user: str) -> str:
-    api_key = os.environ["ANTHROPIC_API_KEY"]
-    model = os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
-
-    payload = {
-        "model": model,
-        "max_tokens": 8192,
-        "temperature": 0.2,
-        "system": system,
-        "messages": [{"role": "user", "content": user}],
-    }
-    with httpx.Client(timeout=240) as client:
-        r = client.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={
-                "x-api-key": api_key,
-                "anthropic-version": "2023-06-01",
-                "Content-Type": "application/json",
-            },
-            json=payload,
-        )
-    r.raise_for_status()
-    return r.json()["content"][0]["text"]
-
-
-def _get_watsonx_token(api_key: str) -> str:
-    """Exchange an IBM Cloud API key for a short-lived IAM bearer token."""
-    with httpx.Client(timeout=30) as client:
-        r = client.post(
-            "https://iam.cloud.ibm.com/identity/token",
-            data={
-                "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
-                "apikey": api_key,
-            },
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-        )
-    r.raise_for_status()
-    return r.json()["access_token"]
-
-
-def _call_watsonx(system: str, user: str) -> str:
-    api_key = os.environ.get("WATSONX_API_KEY") or os.environ["IBM_CLOUD_API_KEY"]
-    project_id = os.environ["WATSONX_PROJECT_ID"]
-    base_url = os.getenv("WATSONX_URL", "https://us-south.ml.cloud.ibm.com")
-    model = os.getenv("WATSONX_MODEL", "ibm/granite-3-3-8b-instruct")
-
-    token = _get_watsonx_token(api_key)
-
-    # watsonx.ai uses a combined prompt; prepend system as an instruction block
-    combined_prompt = f"{system}\n\n{user}"
-
-    payload = {
-        "model_id": model,
-        "project_id": project_id,
-        "input": combined_prompt,
-        "parameters": {
-            "decoding_method": "greedy",
-            "temperature": 0.2,
-            "max_new_tokens": 8192,
-        },
-    }
-    with httpx.Client(timeout=120) as client:
-        r = client.post(
-            f"{base_url}/ml/v1/text/generation?version=2023-05-29",
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-            },
-            json=payload,
-        )
     if not r.is_success:
-        print(f"\nwatsonx error {r.status_code}:\n{r.text}\n")
+        print(f"\nGroq error {r.status_code}:\n{r.text}\n")
         r.raise_for_status()
-    return r.json()["results"][0]["generated_text"]
 
+    raw: str = r.json()["choices"][0]["message"]["content"].strip()
 
-PROVIDERS = {
-    "openai": _call_openai,
-    "anthropic": _call_anthropic,
-    "watsonx": _call_watsonx,
-}
+    # Strip <think>...</think> blocks produced by reasoning models
+    raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+
+    # Strip markdown code fences if the model wraps the JSON
+    if raw.startswith("```"):
+        raw = re.sub(r"^```[a-z]*\n?", "", raw)
+        raw = re.sub(r"\n?```$", "", raw)
+
+    return raw
+
 
 # ---------------------------------------------------------------------------
 # Schema injection
@@ -279,7 +200,7 @@ def _validate(raw: str, capability: int) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Test a prompt file directly against the LLM provider.")
+    parser = argparse.ArgumentParser(description="Test a prompt file directly against Groq.")
     parser.add_argument("--capability", type=int, choices=[1, 2], required=True,
                         help="1 = PRD→sprints, 2 = sprint→tickets")
     parser.add_argument("--prd", type=pathlib.Path, required=True,
@@ -295,6 +216,15 @@ def main() -> None:
     if args.capability == 2 and not args.sprint_id:
         parser.error("--sprint-id is required for --capability 2")
 
+    if "GROQ_API_KEY" not in os.environ or not os.environ["GROQ_API_KEY"].strip():
+        print("GROQ_API_KEY is not set. Add it to your .env file (see .env.example).")
+        sys.exit(1)
+
+    provider_name = os.getenv("LLM_PROVIDER", "groq").strip().lower()
+    if provider_name and provider_name != "groq":
+        print(f"Unknown LLM_PROVIDER '{provider_name}'. This project supports Groq only (LLM_PROVIDER=groq).")
+        sys.exit(1)
+
     prd_text = args.prd.read_text(encoding="utf-8")
 
     plan_json: str | None = None
@@ -302,27 +232,23 @@ def main() -> None:
         plan_path = args.plan or (ROOT / "samples" / "fixtures" / "sprint-plan.example.json")
         plan_json = plan_path.read_text(encoding="utf-8")
 
-    # Choose provider
-    provider_name = os.getenv("LLM_PROVIDER", "openai").lower()
-    if provider_name not in PROVIDERS:
-        print(f"Unknown LLM_PROVIDER '{provider_name}'. Choose from: {', '.join(PROVIDERS)}")
-        sys.exit(1)
-    call_provider = PROVIDERS[provider_name]
-
     # Load prompt
     prompt_file = PROMPT_DIR / ("prd_to_sprints.md" if args.capability == 1 else "sprint_to_tickets.md")
     system, user_template = _load_prompt(prompt_file)
     user = _inject_schema(user_template, args.capability, plan_json, args.sprint_id, prd_text)
 
+    model = os.getenv("GROQ_MODEL_ID", _DEFAULT_MODEL)
+
     # Call
-    print(f"Provider : {provider_name}")
+    print(f"Provider : groq")
+    print(f"Model    : {model}")
     print(f"Prompt   : {prompt_file.name}")
     print(f"PRD      : {args.prd}")
     if args.capability == 2:
         print(f"Sprint   : {args.sprint_id}")
     print("\nCalling LLM… (this may take 20–60 seconds)")
     t0 = time.monotonic()
-    raw = call_provider(system, user)
+    raw = _call_groq(system, user)
     elapsed = time.monotonic() - t0
     print(f"Response received in {elapsed:.1f}s")
 

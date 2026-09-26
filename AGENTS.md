@@ -37,7 +37,7 @@ ticketseed/
 │   │   ├── models.py          ← Pydantic v2 models (source of truth for all data shapes)
 │   │   ├── validators.py      ← deterministic post-LLM validation
 │   │   ├── routes.py          ← API route handlers
-│   │   └── providers/         ← LLM provider adapter (one impl per provider)
+│   │   └── providers/         ← LLM provider adapter (Groq only)
 │   ├── prompts/
 │   │   ├── prd_to_sprints.md
 │   │   └── sprint_to_tickets.md
@@ -110,9 +110,10 @@ ticketseed/
 
 ## LLM layer
 
-- Provider-agnostic. One `LLMProvider` Protocol: `async generate_json(system_prompt, user_prompt, json_schema) -> str`
-- Provider selected by `LLM_PROVIDER` environment variable. API keys from env vars only — never committed.
-- IBM watsonx.ai is the recommended provider (available to hackathon participants).
+- **Groq only.** One `LLMProvider` Protocol: `async generate_json(system_prompt, user_prompt, json_schema) -> str`
+- Implementation: `backend/app/providers/groq.py` (`GroqProvider`)
+- Env: `LLM_PROVIDER=groq`, `GROQ_API_KEY` (required), `GROQ_MODEL_ID` (optional, default `openai/gpt-oss-120b`)
+- API keys from env vars only — never committed. Do not add other providers.
 - On invalid JSON response: retry once, sending validation errors back to the model. If still failing, return `502`.
 
 ---

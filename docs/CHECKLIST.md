@@ -2,7 +2,9 @@
 
 > Status key: ✅ Done · ⬜ Remaining · 🔲 Blocked (needs something else first)
 >
-> Last updated: see git log. Cross-reference with [`docs/PRD-ticketseed.md`](PRD-ticketseed.md) §15.2 for the full deliverables table.
+> Last updated: 2026-09-27. Cross-reference with [`docs/PRD-ticketseed.md`](PRD-ticketseed.md) §15.2 for the full deliverables table.
+>
+> LLM: **Groq only** (`LLM_PROVIDER=groq`). No watsonx / OpenAI / Anthropic adapters.
 
 ---
 
@@ -13,7 +15,8 @@
 - [x] `backend/app/__init__.py` created
 - [x] `backend/app/providers/base.py` — `LLMProvider` Protocol
 - [x] `backend/app/providers/__init__.py`
-- [x] `backend/app/providers/groq.py` — Groq provider adapter
+- [x] `backend/app/providers/groq.py` — Groq provider adapter (only provider)
+- [x] watsonx provider removed — project is Groq-only
 
 ### API & application
 - [x] `backend/app/main.py` — FastAPI app, CORS middleware, router mounted at `/api`
@@ -21,6 +24,8 @@
 - [x] Input validation — 400 on empty PRD, 400 on PRD over 30 000 chars
 - [x] LLM retry logic — retry once on bad JSON, return 502 after second failure
 - [x] Prompt files loaded from `backend/prompts/` (not inlined as strings)
+- [x] `backend/scripts/test_llm.py` — Groq connectivity smoke test
+- [x] `backend/scripts/test_endpoint.py` — local endpoint smoke test
 
 ### Validators
 - [x] `backend/app/validators.py` — `validate_sprint_plan()` (Capability 1, all 4 rules)
@@ -55,13 +60,15 @@
 ### Prompts
 - [x] `backend/prompts/prd_to_sprints.md` — system + user template for Capability 1
 - [x] `backend/prompts/sprint_to_tickets.md` — system + user template for Capability 2
+- [x] `scripts/test_prompt.py` — direct Groq prompt test harness (no backend required)
 
 ### Quality & metrics
 - [ ] Run all three sample PRDs through `POST /api/plan/sprints` and check validator output
 - [ ] Run all three sample PRDs through `POST /api/plan/tickets` (at least one sprint per sample)
 - [ ] Tune `prd_to_sprints.md` until validator warnings are rare
 - [ ] Tune `sprint_to_tickets.md` until validator warnings are rare
-- [ ] `docs/metrics.md` — capture metrics from PRD §18:
+- [x] `docs/metrics.md` — template scaffolded
+- [ ] `docs/metrics.md` — fill numbers from PRD §18:
   - [ ] Traceability % (source quotes verified) — target > 95 %
   - [ ] Coverage % (requirements → sprints, sprint requirements → tickets) — target 100 %
   - [ ] Client questions count per sample (especially `prd-vague.md`)
@@ -121,14 +128,15 @@
 ### Repository setup
 - [x] Repository created with this PRD committed
 - [x] `AGENTS.md` in place
+- [x] `docs/QUICKSTART.md` — local setup guide (Groq)
+- [x] `requirements.txt` — all Python dependencies listed
+- [x] `.env.example` — variable names only, no secrets (`GROQ_API_KEY`, `GROQ_MODEL_ID`, `LLM_PROVIDER`, `MAX_PRD_CHARS`)
 - [ ] `README.md` — project description, local setup, env variables, how to run
 
 ### Vercel deployment
 - [ ] Vercel project connected to the repo
 - [ ] `vercel.json` — routes `POST /api/*` to the Python function, everything else to the frontend
 - [ ] `api/index.py` — Vercel entry point importing the FastAPI `app`
-- [ ] `requirements.txt` — all Python dependencies listed
-- [ ] `.env.example` — variable names only, no secrets (`GROQ_API_KEY`, `GROQ_MODEL_ID`, `LLM_PROVIDER`, `MAX_PRD_CHARS`)
 - [ ] Fluid compute enabled, `maxDuration` set explicitly in `vercel.json`
 - [ ] Hello-world deploy live (placeholder frontend + `/api/health` responding)
 - [ ] LLM API key set as a Vercel environment variable (not committed)
@@ -140,13 +148,13 @@
 
 ### Bob session evidence collection
 - [ ] Collect screenshots from all team members into `bob_sessions/`
-  - [x] `bob_sessions/abdullah/` — 2 screenshots present
+  - [x] `bob_sessions/abdullah/` — 4 screenshots present
   - [x] `bob_sessions/sergiu/` — 1 screenshot present
   - [ ] `bob_sessions/ali/` — needs ≥ 3 screenshots
   - [ ] `bob_sessions/najmi/` — needs ≥ 3 screenshots
 
 ### Submission materials
-- [ ] `docs/metrics.md` available (handed off from Person B)
+- [x] `docs/metrics.md` template available (numbers still empty — Person B)
 - [ ] Problem & Solution Statement — 500 words or fewer
 - [ ] IBM Bob Usage Statement — 500 words or fewer
 - [ ] Cover image
@@ -177,7 +185,7 @@
 | Area | Owner | Status |
 |---|---|---|
 | Pydantic models | A | ✅ Complete |
-| LLM provider adapter (groq) | A | ✅ Complete |
+| LLM provider adapter (Groq only) | A | ✅ Complete |
 | FastAPI app + routes | A | ✅ Complete |
 | Validators (Cap 1 + Cap 2) | A | ✅ Complete |
 | Validator tests | A | ⬜ Not started |
@@ -185,10 +193,11 @@
 | Prompts (both) | B | ✅ Complete |
 | Sample PRDs (all 3) | B | ✅ Complete |
 | Fixtures (both) | B | ✅ Complete |
-| Prompt tuning + metrics | B | ⬜ Remaining |
+| Prompt test script (Groq) | B | ✅ Complete |
+| Prompt tuning + metrics numbers | B | ⬜ Remaining |
 | Frontend scaffold | C | ⬜ Not started |
 | Frontend views + export | C | ⬜ Not started |
-| Vercel deployment | D | ⬜ Not started |
-| `api/index.py` + `vercel.json` | D | ⬜ Not started |
-| README | D | ⬜ Not started |
-| Submission materials | D | ⬜ Not started |
+| `.env.example` + `requirements.txt` + QUICKSTART | D | ✅ Complete |
+| README | D | ⬜ Remaining |
+| Vercel deployment (`api/index.py` + `vercel.json`) | D | ⬜ Not started |
+| Submission materials | D | ⬜ Remaining |
