@@ -41,19 +41,28 @@ _MAX_PRD_CHARS: int = int(os.environ.get("MAX_PRD_CHARS", 30_000))
 
 def _get_provider():
     """Lazily import and instantiate the configured LLM provider."""
-    provider_name = os.environ.get("LLM_PROVIDER", "watsonx").lower()
-    if provider_name == "watsonx":
-        from .providers.watsonx import WatsonxProvider
-        return WatsonxProvider()
-    raise ValueError(f"Unknown LLM_PROVIDER: {provider_name!r}. Supported: watsonx")
+    provider_name = os.environ.get("LLM_PROVIDER", "").strip().lower()
+    if not provider_name:
+        raise ValueError("LLM_PROVIDER is not set. Add LLM_PROVIDER=groq to your .env file.")
+    if provider_name == "groq":
+        from .providers.groq import GroqProvider
+        return GroqProvider()
+    raise ValueError(f"Unknown LLM_PROVIDER: {provider_name!r}. Supported: groq")
 
 
 def _load_prompt(filename: str) -> str:
-    """Read a prompt file from backend/prompts/."""
+    """Read the ## System section from a prompt file in backend/prompts/."""
     prompts_dir = os.path.join(os.path.dirname(__file__), "..", "prompts")
     path = os.path.join(prompts_dir, filename)
     with open(path, encoding="utf-8") as f:
-        return f.read()
+        content = f.read()
+    # Extract only the ## System section (everything between ## System and the next ## heading)
+    if "## System" in content:
+        content = content.split("## System", 1)[1]
+        # Stop at the next ## heading if present
+        if "\n## " in content:
+            content = content.split("\n## ", 1)[0]
+    return content.strip()
 
 
 async def _call_llm_with_retry(
@@ -98,7 +107,7 @@ async def health():
     """Liveness check. Returns provider name but no secrets."""
     return {
         "status": "ok",
-        "provider": os.environ.get("LLM_PROVIDER", "watsonx"),
+        "provider": os.environ.get("LLM_PROVIDER", "").strip() or "unset",
     }
 
 

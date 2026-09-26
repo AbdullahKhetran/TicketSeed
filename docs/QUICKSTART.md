@@ -26,32 +26,34 @@ cd ticket-planner
 
 ## 2 — Environment variables
 
-Copy the example file and fill in your watsonx credentials:
+Copy the example file and fill in your credentials:
 
 ```bash
+# Mac/Linux
 cp .env.example .env
+# Windows
+copy .env.example .env
 ```
 
-Open `.env` and set these values:
+Open `.env` and set:
 
 ```env
-# Required — IBM watsonx.ai credentials
-WATSONX_API_KEY=<your-ibm-cloud-api-key>
-WATSONX_PROJECT_ID=<your-watsonx-project-id>
+# Required — Groq API key (free, no card required)
+LLM_PROVIDER=groq
+GROQ_API_KEY=<your-groq-api-key>
 
-# Optional — defaults shown
-WATSONX_URL=https://us-south.ml.cloud.ibm.com
-WATSONX_MODEL_ID=ibm/granite-3-3-8b-instruct
-LLM_PROVIDER=watsonx
-MAX_PRD_CHARS=30000
+# Optional — do NOT change this default
+GROQ_MODEL_ID=qwen/qwen3.8-27b
 ```
 
 > **Never commit `.env`.** It is already in `.gitignore`.
 
-Where to get the values:
-- **`WATSONX_API_KEY`** — IBM Cloud console → Manage → Access (IAM) → API keys
-- **`WATSONX_PROJECT_ID`** — watsonx.ai console → your project → Manage tab → Project ID
-- **`WATSONX_URL`** — leave as default unless your region is different (e.g. `https://eu-de.ml.cloud.ibm.com`)
+**Where to get the Groq API key (free, takes 2 minutes):**
+1. Go to **[console.groq.com](https://console.groq.com)** — sign up free, no card required
+2. Click **"API Keys"** in the left sidebar
+3. Click **"Create API Key"** → copy it into `GROQ_API_KEY`
+
+> ⚠️ **Do NOT change `GROQ_MODEL_ID`** — `llama-3.3-70b-versatile` is on the free tier. Switching models may hit lower rate limits or incur costs.
 
 ---
 
@@ -85,7 +87,7 @@ The API is now live at **http://localhost:8000**.
 
 | Endpoint | Description |
 |---|---|
-| `GET  http://localhost:8000/api/health` | Liveness check — returns `{"status":"ok","provider":"watsonx"}` |
+| `GET  http://localhost:8000/api/health` | Liveness check — returns `{"status":"ok","provider":"groq"}` |
 | `POST http://localhost:8000/api/plan/sprints` | PRD → sprint plan |
 | `POST http://localhost:8000/api/plan/tickets` | Sprint → tickets |
 | `GET  http://localhost:8000/docs` | Swagger UI (auto-generated) |
@@ -94,7 +96,7 @@ The API is now live at **http://localhost:8000**.
 
 ```bash
 curl http://localhost:8000/api/health
-# Expected: {"status":"ok","provider":"watsonx"}
+# Expected: {"status":"ok","provider":"groq"}
 ```
 
 ---
@@ -180,8 +182,10 @@ Sample PRDs are available in [`samples/`](../samples/) — use them as realistic
 | Symptom | Fix |
 |---|---|
 | `ModuleNotFoundError: No module named 'backend'` | Run `uvicorn` from the repo root, not from inside `backend/` |
-| `KeyError: 'WATSONX_API_KEY'` | `.env` file is missing or the variable name is wrong — check against section 2 above |
-| `401 Unauthorized` from watsonx | API key is invalid or expired — regenerate it in IBM Cloud console |
+| `KeyError: 'GROQ_API_KEY'` | `.env` file is missing or the variable name is wrong — check against section 2 above |
+| `401 Unauthorized` from Groq | API key is invalid or expired — regenerate it at [console.groq.com](https://console.groq.com) |
+| `ValueError: LLM_PROVIDER is not set` | `LLM_PROVIDER` is missing from `.env` — add `LLM_PROVIDER=groq` |
 | `502` from `/api/plan/sprints` | The LLM returned invalid JSON twice. Check `uvicorn` logs for the raw response |
 | Frontend shows blank page or CORS error | Make sure both servers are running and the Vite proxy is configured (`/api` → `localhost:8000`) |
 | `pytest` not found | Virtual environment is not activated — run `.venv\Scripts\Activate.ps1` (Windows) or `source .venv/bin/activate` (macOS/Linux) |
+
