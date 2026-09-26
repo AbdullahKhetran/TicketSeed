@@ -13,7 +13,7 @@
 - [x] `backend/app/__init__.py` created
 - [x] `backend/app/providers/base.py` — `LLMProvider` Protocol
 - [x] `backend/app/providers/__init__.py`
-- [x] `backend/app/providers/watsonx.py` — IBM watsonx.ai adapter with IAM token exchange
+- [x] `backend/app/providers/groq.py` — Groq provider adapter
 
 ### API & application
 - [x] `backend/app/main.py` — FastAPI app, CORS middleware, router mounted at `/api`
@@ -128,7 +128,7 @@
 - [ ] `vercel.json` — routes `POST /api/*` to the Python function, everything else to the frontend
 - [ ] `api/index.py` — Vercel entry point importing the FastAPI `app`
 - [ ] `requirements.txt` — all Python dependencies listed
-- [ ] `.env.example` — variable names only, no secrets (`WATSONX_API_KEY`, `WATSONX_PROJECT_ID`, `WATSONX_URL`, `WATSONX_MODEL_ID`, `LLM_PROVIDER`, `MAX_PRD_CHARS`)
+- [ ] `.env.example` — variable names only, no secrets (`GROQ_API_KEY`, `GROQ_MODEL_ID`, `LLM_PROVIDER`, `MAX_PRD_CHARS`)
 - [ ] Fluid compute enabled, `maxDuration` set explicitly in `vercel.json`
 - [ ] Hello-world deploy live (placeholder frontend + `/api/health` responding)
 - [ ] LLM API key set as a Vercel environment variable (not committed)
@@ -177,7 +177,7 @@
 | Area | Owner | Status |
 |---|---|---|
 | Pydantic models | A | ✅ Complete |
-| LLM provider adapter (watsonx) | A | ✅ Complete |
+| LLM provider adapter (groq) | A | ✅ Complete |
 | FastAPI app + routes | A | ✅ Complete |
 | Validators (Cap 1 + Cap 2) | A | ✅ Complete |
 | Validator tests | A | ⬜ Not started |
