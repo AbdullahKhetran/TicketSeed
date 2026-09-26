@@ -12,6 +12,7 @@
 .copilot/
 .cursor/
 .codeium/
+.bob/
 
 # ============================================
 # CREDENTIALS AND SECRETS (CRITICAL)
@@ -118,6 +119,6 @@ build/
 # DO NOT REMOVE ABOVE PATTERNS
 # Add project-specific patterns below
 # ============================================
-# scripts/ — generated LLM output files (not source)
+# scripts/ ï¿½ generated LLM output files (not source)
 scripts/last_response.json
 scripts/sprint_plan_messy.json
