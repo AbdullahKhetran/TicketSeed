@@ -2,6 +2,9 @@
 
 Get the backend and frontend running on your machine.
 
+**Production (Vercel):** https://ticket-seed.vercel.app/  
+Health check: https://ticket-seed.vercel.app/api/health
+
 ---
 
 ## Prerequisites

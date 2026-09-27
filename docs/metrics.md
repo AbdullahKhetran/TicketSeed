@@ -9,7 +9,9 @@ These numbers go into the demo slides (section 18 of the PRD) and the video narr
 
 ## How to capture
 
-Run each sample PRD through both capabilities on the **deployed Vercel URL** (not localhost).  
+Run each sample PRD through both capabilities on the **deployed Vercel URL** (not localhost):  
+https://ticket-seed.vercel.app/
+
 Record the raw validation report returned by the backend alongside each result.
 
 ```
