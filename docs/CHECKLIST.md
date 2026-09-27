@@ -2,7 +2,7 @@
 
 > Status key: ✅ Done · ⬜ Remaining · 🔲 Blocked (needs something else first)
 >
-> Last updated: 2026-09-27 (after frontend PR #6 + prompts/fix-groq-tests PR #7).  
+> Last updated: 2026-09-27 (after backend pytest suite + error-handling review).  
 > Cross-reference with [`docs/PRD-ticketseed.md`](PRD-ticketseed.md) §15.2.
 >
 > LLM: **Groq only** (`LLM_PROVIDER=groq`). No watsonx / OpenAI / Anthropic adapters.
@@ -36,15 +36,15 @@
 - [x] Normalised quote matching `_normalise()`
 
 ### Tests
-- [ ] `backend/tests/test_validators.py` — pytest suite covering Capability 1 validation rules
-- [ ] `backend/tests/test_validators.py` — pytest suite covering Capability 2 validation rules
-- [ ] `backend/tests/test_routes.py` — route-level tests (happy path + error cases)
-- [ ] All tests passing (`pytest backend/tests/`)
+- [x] `backend/tests/test_validators.py` — pytest suite covering Capability 1 validation rules
+- [x] `backend/tests/test_validators.py` — pytest suite covering Capability 2 validation rules
+- [x] `backend/tests/test_routes.py` — route-level tests (happy path + error cases)
+- [x] All tests passing (`pytest backend/tests/`)
 
 ### Remaining / in-progress
 - [ ] Notify Person C whenever `models.py` changes (ongoing contract per PRD §15.3)
-- [ ] Error handling review — confirm 400 and 502 responses match PRD §9 spec exactly
-- [ ] Code frozen (Sunday midday) — freeze after pytest + any final bugfixes
+- [x] Error handling review — confirm 400 and 502 responses match PRD §9 spec exactly
+- [x] Code frozen (Sunday midday) — freeze after pytest + any final bugfixes
 - [x] Bob sessions — 4 screenshots in `bob_sessions/abdullah/` (meets ≥3 requirement)
 
 ---
@@ -195,8 +195,8 @@
 | Validators (Cap 1 + Cap 2) | A | ✅ Complete |
 | Groq TPM fixes (`reasoning_effort`, smoke scripts) | A | ✅ Complete |
 | Bob sessions (Abdullah) | A | ✅ Complete (4) |
-| Validator / route pytest suites | A | ⬜ Remaining |
-| Error-handling review + code freeze | A | ⬜ Remaining |
+| Validator / route pytest suites | A | ✅ Complete (31 passed) |
+| Error-handling review + code freeze | A | ✅ Complete |
 | Prompts (both) + sample PRDs + fixtures | B | ✅ Complete |
 | Prompt test harness (Cap 1 + Cap 2 OK on clean) | B / A | ✅ Complete |
 | Prompt tuning + metrics numbers | B | ⬜ Remaining |
