@@ -2,10 +2,12 @@
 
 > Status key: ✅ Done · ⬜ Remaining · 🔲 Blocked (needs something else first)
 >
-> Last updated: 2026-09-27 (after Cap 2 prompt slim + live check of all three sample PRDs).  
+> Last updated: 2026-09-27 (production live; real LLM Cap 1/Cap 2 confirmed on https://ticket-seed.vercel.app/).  
 > Cross-reference with [`docs/PRD-ticketseed.md`](PRD-ticketseed.md) §15.2.
 >
 > LLM: **Groq only** (`LLM_PROVIDER=groq`). No watsonx / OpenAI / Anthropic adapters.
+>
+> **Application URL:** https://ticket-seed.vercel.app/
 
 ---
 
@@ -141,14 +143,14 @@
 - [ ] `README.md` — project description, local setup, env variables, how to run
 
 ### Vercel deployment
-- [ ] Vercel project connected to the repo
-- [ ] `vercel.json` — routes `POST /api/*` to the Python function, everything else to the frontend
-- [ ] `api/index.py` — Vercel entry point importing the FastAPI `app`
-- [ ] Fluid compute enabled, `maxDuration` set explicitly in `vercel.json`
-- [ ] Hello-world deploy live (placeholder frontend + `/api/health` responding)
-- [ ] LLM API key set as a Vercel environment variable (not committed)
-- [ ] One real LLM call confirmed on the **deployed URL** (not only locally)
-- [ ] Full app deployed and reachable at the production Application URL
+- [x] Vercel project connected to the repo
+- [x] `vercel.json` — Vite frontend build + `/api/*` rewrite to the Python function (`framework: vite`, Fluid, `maxDuration: 300`)
+- [x] `api/index.py` — Vercel entry point importing the FastAPI `app` (+ `api/requirements.txt`)
+- [x] Fluid compute enabled, `maxDuration` set explicitly in `vercel.json`
+- [x] Production deploy live — https://ticket-seed.vercel.app/ (frontend + `/api/health`)
+- [x] LLM API key set as a Vercel environment variable (not committed)
+- [x] One real LLM call confirmed on the **deployed URL** (not only locally)
+- [x] Full app deployed and reachable at the production Application URL
 
 ### Bob skills (optional, PRD §12.3)
 - [ ] `.bob/skills/` — skill file(s) created if time allows
@@ -182,7 +184,8 @@
 - [ ] Cover image
 - [ ] Video demo (≤ 3 min, ≥ 90 s of product in action)
 - [ ] Slide presentation
-- [ ] Application URL (Vercel production URL) + demo platform
+- [x] Application URL — https://ticket-seed.vercel.app/ (demo platform / lablab submit still open)
+- [ ] Demo platform submission assembled
 - [ ] Technology and category tags filled in
 
 ---
@@ -210,5 +213,6 @@
 | Bob sessions (Ali / Najmi) | C | ⬜ Remaining |
 | `.env.example` + `requirements.txt` + QUICKSTART | D | ✅ Complete |
 | README | D | ⬜ Remaining |
-| Vercel deployment (`api/index.py` + `vercel.json`) | D | ⬜ Not started |
+| Vercel deployment (`api/index.py` + `vercel.json`) | D | ✅ Live — https://ticket-seed.vercel.app/ |
+| Real LLM call on deployed URL | D | ✅ Confirmed |
 | Submission materials | D | ⬜ Remaining |
