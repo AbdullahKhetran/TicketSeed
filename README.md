@@ -215,5 +215,5 @@ The project deploys as a single Vercel project. The frontend is served from the 
 |---|---|
 | Abdullah | Backend |
 | Sergiu | Prompts & quality |
-| TBA | Frontend |
-| TBA | Delivery / infrastructure |
+| Najmi | Frontend |
+| Muhammad Ali | Delivery / infrastructure |
