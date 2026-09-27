@@ -122,3 +122,6 @@ build/
 # scripts/ � generated LLM output files (not source)
 scripts/last_response.json
 scripts/sprint_plan_messy.json
+
+# added by abdullah
+notes/
