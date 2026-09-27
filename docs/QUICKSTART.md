@@ -19,7 +19,7 @@ Get the backend and frontend running on your machine.
 
 ```bash
 git clone https://github.com/AbdullahKhetran/TicketSeed.git
-cd ticket-planner
+cd TicketSeed
 ```
 
 ---
@@ -41,9 +41,7 @@ Open `.env` and set:
 # Required — Groq API key (free, no card required)
 LLM_PROVIDER=groq
 GROQ_API_KEY=<your-groq-api-key>
-
-# Optional — do NOT change this default
-GROQ_MODEL_ID=qwen/qwen3.8-27b
+GROQ_MODEL_ID=openai/gpt-oss-120b
 ```
 
 > **Never commit `.env`.** It is already in `.gitignore`.
@@ -52,8 +50,6 @@ GROQ_MODEL_ID=qwen/qwen3.8-27b
 1. Go to **[console.groq.com](https://console.groq.com)** — sign up free, no card required
 2. Click **"API Keys"** in the left sidebar
 3. Click **"Create API Key"** → copy it into `GROQ_API_KEY`
-
-> ⚠️ **Do NOT change `GROQ_MODEL_ID`** — `llama-3.3-70b-versatile` is on the free tier. Switching models may hit lower rate limits or incur costs.
 
 ---
 
