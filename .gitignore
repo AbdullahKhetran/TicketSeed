@@ -125,3 +125,6 @@ scripts/sprint_plan_messy.json
 
 # added by abdullah
 notes/
+
+# Vercel local link metadata
+.vercel
