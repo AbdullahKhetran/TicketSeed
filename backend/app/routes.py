@@ -26,6 +26,7 @@ from .models import (
     TicketsResponse,
     ValidationReport,
 )
+from .prompt_context import slim_plan_for_sprint
 from .validators import validate_sprint_plan, validate_ticket_list
 
 logger = logging.getLogger(__name__)
@@ -185,9 +186,13 @@ async def plan_tickets(request: TicketsRequest) -> TicketsResponse:
     system_prompt = _load_prompt("sprint_to_tickets.md")
     schema = TicketList.model_json_schema()
 
-    plan_json = request.plan.model_dump_json(indent=2)
+    # Match scripts/test_prompt.py Cap 2: slim plan + compact JSON for free-tier TPM
+    plan_dict = request.plan.model_dump(mode="json")
+    slim = slim_plan_for_sprint(plan_dict, request.sprint_id)
+    plan_json = json.dumps(slim, separators=(",", ":"))
+    schema_json = json.dumps(schema, separators=(",", ":"))
     user_prompt = (
-        f"JSON schema to follow:\n```json\n{json.dumps(schema, indent=2)}\n```\n\n"
+        f"JSON schema to follow:\n```json\n{schema_json}\n```\n\n"
         f"Sprint to generate tickets for: {request.sprint_id}\n\n"
         f"Full sprint plan (for context, do not duplicate other sprints):\n"
         f"```json\n{plan_json}\n```\n\n"

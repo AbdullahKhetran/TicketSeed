@@ -51,6 +51,7 @@ ROOT = pathlib.Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
 from backend.app.models import SprintPlan, TicketList  # noqa: E402
+from backend.app.prompt_context import slim_plan_for_sprint  # noqa: E402
 
 load_dotenv(ROOT / ".env")
 
@@ -142,51 +143,8 @@ def _call_groq(system: str, user: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Schema injection / plan trimming (free-tier TPM)
+# Schema injection (free-tier TPM: compact JSON; Cap 2 plan slimmed in main)
 # ---------------------------------------------------------------------------
-
-
-def _slim_plan_for_sprint(plan: dict, sprint_id: str) -> dict:
-    """
-    Keep only the target sprint, earlier sprints as stubs, and related requirements.
-    Cuts Cap 2 prompt size so Groq free-tier ~8k TPM can accept the request.
-    """
-    sprints = plan.get("sprints") or []
-    target = next((s for s in sprints if s.get("id") == sprint_id), None)
-    if target is None:
-        raise SystemExit(f"Sprint id {sprint_id!r} not found in plan.")
-
-    target_order = int(target.get("order", 0))
-    kept_sprints: list[dict] = []
-    for s in sprints:
-        order = int(s.get("order", 0))
-        if s.get("id") == sprint_id:
-            kept_sprints.append(s)
-        elif order < target_order:
-            # Stub earlier sprints — enough context to avoid duplicating their work
-            kept_sprints.append({
-                "id": s.get("id"),
-                "order": order,
-                "name": s.get("name"),
-                "goal": s.get("goal"),
-                "requirement_ids": s.get("requirement_ids") or [],
-                "deliverables": [],
-                "depends_on": s.get("depends_on") or [],
-                "rationale": "",
-            })
-
-    needed_req_ids = set(target.get("requirement_ids") or [])
-    for s in kept_sprints:
-        needed_req_ids.update(s.get("requirement_ids") or [])
-
-    requirements = [r for r in (plan.get("requirements") or []) if r.get("id") in needed_req_ids]
-
-    return {
-        "project": plan.get("project") or {},
-        "requirements": requirements,
-        "sprints": kept_sprints,
-        "client_questions": [],
-    }
 
 
 def _inject_schema(template: str, capability: int, plan_json: str | None, sprint_id: str | None, prd: str) -> str:
@@ -278,7 +236,10 @@ def main() -> None:
     if args.capability == 2:
         plan_path = args.plan or (ROOT / "samples" / "fixtures" / "sprint-plan.example.json")
         plan = json.loads(plan_path.read_text(encoding="utf-8"))
-        slim = _slim_plan_for_sprint(plan, args.sprint_id)
+        try:
+            slim = slim_plan_for_sprint(plan, args.sprint_id)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
         plan_json = json.dumps(slim, separators=(",", ":"))
         print(f"Plan     : {plan_path} (slimmed to {args.sprint_id} + earlier stubs)")
 
