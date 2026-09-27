@@ -12,6 +12,8 @@ from __future__ import annotations
 import json
 import logging
 import os
+from collections.abc import Callable
+from typing import TypeVar
 
 from fastapi import APIRouter, HTTPException
 
@@ -29,6 +31,12 @@ from .validators import validate_sprint_plan, validate_ticket_list
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+T = TypeVar("T")
+
+_LLM_FAILURE_DETAIL = (
+    "The AI model failed to return valid output after retry. Please try again."
+)
 
 # Maximum PRD length (configurable via env; PRD §8.3)
 _MAX_PRD_CHARS: int = int(os.environ.get("MAX_PRD_CHARS", 30_000))
@@ -70,17 +78,17 @@ async def _call_llm_with_retry(
     system_prompt: str,
     user_prompt: str,
     schema: dict,
-) -> str:
+    parse: Callable[[str], T],
+) -> T:
     """
-    Call the LLM once; on bad JSON, retry once with the error message appended.
-    Raises HTTPException(502) if both attempts fail.
+    Call the LLM once; on bad JSON or a schema mismatch, retry once with the
+    error message appended. Raises HTTPException(502) if both attempts fail.
     """
     for attempt in (1, 2):
         try:
             raw = await provider.generate_json(system_prompt, user_prompt, schema)
-            json.loads(raw)   # validate it parses — raises ValueError if not
-            return raw
-        except (ValueError, KeyError, Exception) as exc:
+            return parse(raw)
+        except Exception as exc:
             if attempt == 1:
                 logger.warning("LLM attempt 1 failed (%s), retrying with error context.", exc)
                 user_prompt = (
@@ -91,10 +99,7 @@ async def _call_llm_with_retry(
                 )
             else:
                 logger.error("LLM attempt 2 failed: %s", exc)
-                raise HTTPException(
-                    status_code=502,
-                    detail="The AI model failed to return valid output after retry. Please try again.",
-                )
+                raise HTTPException(status_code=502, detail=_LLM_FAILURE_DETAIL)
 
 
 # ---------------------------------------------------------------------------
@@ -138,8 +143,13 @@ async def plan_sprints(request: SprintsRequest) -> SprintsResponse:
         f"PRD to process:\n\n{prd}"
     )
 
-    raw = await _call_llm_with_retry(provider, system_prompt, user_prompt, schema)
-    plan = SprintPlan.model_validate_json(raw)
+    plan = await _call_llm_with_retry(
+        provider,
+        system_prompt,
+        user_prompt,
+        schema,
+        SprintPlan.model_validate_json,
+    )
     validation = validate_sprint_plan(plan, prd)
 
     return SprintsResponse(plan=plan, validation=validation)
@@ -184,8 +194,13 @@ async def plan_tickets(request: TicketsRequest) -> TicketsResponse:
         f"Original PRD:\n\n{prd}"
     )
 
-    raw = await _call_llm_with_retry(provider, system_prompt, user_prompt, schema)
-    ticket_list = TicketList.model_validate_json(raw)
+    ticket_list = await _call_llm_with_retry(
+        provider,
+        system_prompt,
+        user_prompt,
+        schema,
+        TicketList.model_validate_json,
+    )
     validation = validate_ticket_list(ticket_list, request.plan)
 
     return TicketsResponse(tickets=ticket_list, validation=validation)
