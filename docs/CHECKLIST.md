@@ -2,7 +2,8 @@
 
 > Status key: ✅ Done · ⬜ Remaining · 🔲 Blocked (needs something else first)
 >
-> Last updated: 2026-09-27. Cross-reference with [`docs/PRD-ticketseed.md`](PRD-ticketseed.md) §15.2 for the full deliverables table.
+> Last updated: 2026-09-27 (after frontend PR #6 + prompts/fix-groq-tests PR #7).  
+> Cross-reference with [`docs/PRD-ticketseed.md`](PRD-ticketseed.md) §15.2.
 >
 > LLM: **Groq only** (`LLM_PROVIDER=groq`). No watsonx / OpenAI / Anthropic adapters.
 
@@ -17,6 +18,7 @@
 - [x] `backend/app/providers/__init__.py`
 - [x] `backend/app/providers/groq.py` — Groq provider adapter (only provider)
 - [x] watsonx provider removed — project is Groq-only
+- [x] `reasoning_effort: "low"` on Groq calls — free-tier TPM friendly (gpt-oss otherwise burns budget on reasoning)
 
 ### API & application
 - [x] `backend/app/main.py` — FastAPI app, CORS middleware, router mounted at `/api`
@@ -40,9 +42,10 @@
 - [ ] All tests passing (`pytest backend/tests/`)
 
 ### Remaining / in-progress
-- [ ] Notify Person C whenever `models.py` changes (contract per PRD §15.3)
+- [ ] Notify Person C whenever `models.py` changes (ongoing contract per PRD §15.3)
 - [ ] Error handling review — confirm 400 and 502 responses match PRD §9 spec exactly
-- [ ] Code frozen (Sunday midday)
+- [ ] Code frozen (Sunday midday) — freeze after pytest + any final bugfixes
+- [x] Bob sessions — 4 screenshots in `bob_sessions/abdullah/` (meets ≥3 requirement)
 
 ---
 
@@ -53,14 +56,14 @@
 - [x] `samples/fixtures/tickets.example.json` — hand-written, passes Pydantic models
 
 ### Sample PRDs
-- [x] `samples/prd-clean.md` — well-written, unambiguous sample
-- [x] `samples/prd-messy.md` — realistic messy client PRD
-- [x] `samples/prd-vague.md` — vague PRD that should generate client questions
+- [x] `samples/prd-clean.md` — well-written, unambiguous sample (shortened for Groq ~8k TPM)
+- [x] `samples/prd-messy.md` — realistic messy client PRD (shortened for Groq ~8k TPM)
+- [x] `samples/prd-vague.md` — vague PRD that should generate client questions (shortened for Groq ~8k TPM)
 
 ### Prompts
 - [x] `backend/prompts/prd_to_sprints.md` — system + user template for Capability 1
 - [x] `backend/prompts/sprint_to_tickets.md` — system + user template for Capability 2
-- [x] `scripts/test_prompt.py` — direct Groq prompt test harness (no backend required)
+- [x] `scripts/test_prompt.py` — direct Groq prompt test harness (Cap 1 + Cap 2 passing on `prd-clean`)
 
 ### Quality & metrics
 - [ ] Run all three sample PRDs through `POST /api/plan/sprints` and check validator output
@@ -80,46 +83,48 @@
 
 ---
 
-## Person C — Frontend (TBA / Ali / Najmi)
+## Person C — Frontend (merged PR #6 — `frontend/initial-implementation`)
 
 ### Scaffold & types
-- [ ] Vite + React + TypeScript + Tailwind CSS project in `frontend/`
-- [ ] TypeScript types mirroring `backend/app/models.py` exactly (update whenever A changes models)
-- [ ] Vite dev-server proxy configured: `/api` → `http://localhost:8000`
+- [x] Vite + React + TypeScript + Tailwind CSS project in `frontend/`
+- [x] TypeScript types mirroring `backend/app/models.py` exactly (`frontend/src/types.ts`)
+- [x] Vite dev-server proxy configured: `/api` → `http://localhost:8000`
 
 ### Upload view (Capability 1 — input)
-- [ ] PRD text area or file-upload input
-- [ ] Markdown preview of the uploaded PRD
-- [ ] "Generate sprint plan" button with loading state
-- [ ] Error display for 400 and 502 responses
+- [x] PRD text area or file-upload input (paste + drag/drop `.md`)
+- [x] Markdown preview of the uploaded PRD (`react-markdown`)
+- [x] "Generate sprint plan" button with loading state
+- [x] Error display for API failures (400 / 502 messages from backend)
 
 ### Sprint plan view (Capability 1 — output)
-- [ ] Sprint cards rendered in dependency order
-- [ ] Requirements listed per sprint with `source_quote` shown
-- [ ] Client questions panel with "Copy all" button
-- [ ] Validation panel showing `ValidationReport` issues (warnings and errors)
-- [ ] Editable sprint / requirement fields (inline edit)
+- [x] Sprint cards rendered in dependency order (`order`)
+- [x] Requirements listed per sprint with `source_quote` shown
+- [x] Client questions panel with "Copy all" button
+- [x] Validation panel showing `ValidationReport` issues (warnings and errors)
+- [x] Editable sprint **name** and **goal** (inline edit)
+- [ ] Editable **requirement assignment** (move requirements between sprints) — PRD §10 gap
 
 ### Tickets view (Capability 2 — output)
-- [ ] Sprint selector to choose which sprint to expand
-- [ ] "Generate tickets" button with loading state (per sprint, not all at once)
-- [ ] Ticket cards showing title, type, size, priority, acceptance criteria
-- [ ] Link from ticket back to `requirement_ids` → `source_quote`
-- [ ] Editable ticket fields (inline edit)
-- [ ] `needs_clarification` / `clarification_note` highlighted visually
+- [x] Per-sprint generate from plan view (one sprint at a time, not all at once)
+- [x] "Generate tickets" button with loading state
+- [x] Ticket cards showing title, type, size, priority, acceptance criteria
+- [x] Link from ticket back to `requirement_ids` → `source_quote`
+- [x] Editable ticket fields (inline edit)
+- [x] `needs_clarification` / `clarification_note` highlighted; flagged tickets sorted first
+- [x] "Regenerate" for the active sprint
 
 ### Export & finishing
-- [ ] Export sprint plan to Markdown
-- [ ] Export sprint plan to JSON
-- [ ] Export tickets to Markdown
-- [ ] Export tickets to JSON
+- [x] Export Markdown (plan + generated tickets) from plan and tickets views
+- [x] Export JSON (plan + tickets + validation) from plan and tickets views
 
 ### API integration
-- [ ] All calls use relative `/api/...` paths (no hardcoded host)
-- [ ] Connected to real backend (replaces fixture-driven state)
+- [x] All calls use relative `/api/...` paths (no hardcoded host)
+- [x] Connected to real backend (`/api/plan/sprints`, `/api/plan/tickets`)
 
-### Bob evidence
+### Remaining / Bob evidence
+- [ ] Requirement ↔ sprint reassignment UI (optional polish if time)
 - [ ] At least 3 Bob session screenshots in `bob_sessions/ali/` or `bob_sessions/najmi/`
+- [ ] UI freeze except bug fixes (Sunday midday)
 
 ---
 
@@ -188,15 +193,17 @@
 | LLM provider adapter (Groq only) | A | ✅ Complete |
 | FastAPI app + routes | A | ✅ Complete |
 | Validators (Cap 1 + Cap 2) | A | ✅ Complete |
-| Validator tests | A | ⬜ Not started |
-| Route tests | A | ⬜ Not started |
-| Prompts (both) | B | ✅ Complete |
-| Sample PRDs (all 3) | B | ✅ Complete |
-| Fixtures (both) | B | ✅ Complete |
-| Prompt test script (Groq) | B | ✅ Complete |
+| Groq TPM fixes (`reasoning_effort`, smoke scripts) | A | ✅ Complete |
+| Bob sessions (Abdullah) | A | ✅ Complete (4) |
+| Validator / route pytest suites | A | ⬜ Remaining |
+| Error-handling review + code freeze | A | ⬜ Remaining |
+| Prompts (both) + sample PRDs + fixtures | B | ✅ Complete |
+| Prompt test harness (Cap 1 + Cap 2 OK on clean) | B / A | ✅ Complete |
 | Prompt tuning + metrics numbers | B | ⬜ Remaining |
-| Frontend scaffold | C | ⬜ Not started |
-| Frontend views + export | C | ⬜ Not started |
+| Frontend scaffold + types + proxy | C | ✅ Complete (PR #6) |
+| Upload / plan / tickets views + export + real API | C | ✅ Complete |
+| Requirement reassignment between sprints | C | ⬜ Remaining (PRD gap) |
+| Bob sessions (Ali / Najmi) | C | ⬜ Remaining |
 | `.env.example` + `requirements.txt` + QUICKSTART | D | ✅ Complete |
 | README | D | ⬜ Remaining |
 | Vercel deployment (`api/index.py` + `vercel.json`) | D | ⬜ Not started |
