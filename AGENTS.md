@@ -5,6 +5,13 @@
 
 ---
 
+## Standing constraints (do not violate)
+
+- **Do not modify** `docs/PRD-ticketseed.md`. It is the frozen product spec. Read it for guidance; never edit it. If the PRD and implementation diverge, change code/docs elsewhere or raise it with the team — do not patch the PRD.
+- **Free tier only.** Do not introduce paid services, paid APIs, or paid plan features. Any choice to implement (LLM model, hosting, analytics, email, storage, CI, third-party SDKs, etc.) must be free or fully usable on a free/hobby plan. Prefer options already named in this repo (Groq free tier, Vercel Hobby).
+
+---
+
 ## Project summary
 
 **TicketSeed** converts a non-technical client PRD (Markdown) into an ordered sprint plan and developer-ready tickets, with full traceability back to the client's own words.
