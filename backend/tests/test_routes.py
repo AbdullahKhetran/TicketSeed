@@ -1,11 +1,13 @@
 """Route tests with a fake LLM provider. Never calls Groq."""
 
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 
 from backend.app.main import app
 from backend.app.routes import _LLM_FAILURE_DETAIL
-from backend.tests.helpers import PRD, plan, ticket_list
+from backend.tests.helpers import PRD, plan, requirement, sprint, ticket, ticket_list
 
 _BOOM = "SECRET_PROVIDER_BOOM"
 
@@ -14,9 +16,11 @@ class FakeProvider:
     def __init__(self, responses: list):
         self._responses = list(responses)
         self.calls = 0
+        self.user_prompts: list[str] = []
 
     async def generate_json(self, system_prompt: str, user_prompt: str, json_schema: dict) -> str:
         self.calls += 1
+        self.user_prompts.append(user_prompt)
         item = self._responses.pop(0)
         if isinstance(item, BaseException):
             raise item
@@ -142,3 +146,51 @@ def test_tickets_happy_path(client, monkeypatch):
     assert "validation" in body
     assert body["validation"]["ok"] is True
     assert fake.calls == 1
+
+
+def test_tickets_prompt_is_slimmed_and_compact(client, monkeypatch):
+    """Cap 2 user prompt matches harness: compact JSON, later sprints dropped."""
+    later_marker = "UNIQUE_LATER_SPRINT_MARKER_SHOULD_NOT_APPEAR"
+    multi = plan(
+        requirements=[
+            requirement("R1", source_quote="order online"),
+            requirement("R2", source_quote="and pay"),
+        ],
+        sprints=[
+            sprint("S1", order=1, requirement_ids=["R1"], rationale="Foundations come first."),
+            sprint(
+                "S2",
+                order=2,
+                requirement_ids=["R2"],
+                name="Later",
+                depends_on=["S1"],
+                rationale=later_marker,
+                deliverables=[later_marker],
+            ),
+        ],
+    )
+    tickets = ticket_list(
+        sprint_id="S1",
+        tickets=[ticket("S1-T1", requirement_ids=["R1"])],
+    )
+    fake = _patch_provider(monkeypatch, [tickets.model_dump_json()])
+    response = client.post(
+        "/api/plan/tickets",
+        json=_tickets_body(plan=multi.model_dump(mode="json"), sprint_id="S1"),
+    )
+    assert response.status_code == 200
+    assert fake.calls == 1
+    prompt = fake.user_prompts[0]
+    assert later_marker not in prompt
+    assert '"id":"S1"' in prompt
+    assert '"id":"S2"' not in prompt
+    # Compact JSON: schema/plan should not be pretty-printed with 2-space indent
+    assert '{\n  "id"' not in prompt
+    # Schema fence still present and compact
+    assert "```json\n{" in prompt
+    # Round-trip: embedded plan JSON parses and only has S1
+    start = prompt.index("```json\n", prompt.index("Full sprint plan")) + len("```json\n")
+    end = prompt.index("\n```", start)
+    embedded = json.loads(prompt[start:end])
+    assert [s["id"] for s in embedded["sprints"]] == ["S1"]
+    assert embedded["client_questions"] == []

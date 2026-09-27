@@ -2,7 +2,7 @@
 
 > Status key: ✅ Done · ⬜ Remaining · 🔲 Blocked (needs something else first)
 >
-> Last updated: 2026-09-27 (after backend pytest suite + error-handling review).  
+> Last updated: 2026-09-27 (after Cap 2 prompt slim + live check of all three sample PRDs).  
 > Cross-reference with [`docs/PRD-ticketseed.md`](PRD-ticketseed.md) §15.2.
 >
 > LLM: **Groq only** (`LLM_PROVIDER=groq`). No watsonx / OpenAI / Anthropic adapters.
@@ -24,8 +24,9 @@
 - [x] `backend/app/main.py` — FastAPI app, CORS middleware, router mounted at `/api`
 - [x] `backend/app/routes.py` — `GET /api/health`, `POST /api/plan/sprints`, `POST /api/plan/tickets`
 - [x] Input validation — 400 on empty PRD, 400 on PRD over 30 000 chars
-- [x] LLM retry logic — retry once on bad JSON, return 502 after second failure
+- [x] LLM retry logic — retry once on bad JSON / schema mismatch, return 502 after second failure
 - [x] Prompt files loaded from `backend/prompts/` (not inlined as strings)
+- [x] Cap 2 prompt slim — `slim_plan_for_sprint` + compact JSON (same as `scripts/test_prompt.py` harness; avoids Groq free-tier 413)
 - [x] `backend/scripts/test_llm.py` — Groq connectivity smoke test
 - [x] `backend/scripts/test_endpoint.py` — local endpoint smoke test
 
@@ -38,13 +39,14 @@
 ### Tests
 - [x] `backend/tests/test_validators.py` — pytest suite covering Capability 1 validation rules
 - [x] `backend/tests/test_validators.py` — pytest suite covering Capability 2 validation rules
-- [x] `backend/tests/test_routes.py` — route-level tests (happy path + error cases)
-- [x] All tests passing (`pytest backend/tests/`)
+- [x] `backend/tests/test_routes.py` — route-level tests (happy path + error cases + Cap 2 slim prompt)
+- [x] `backend/tests/test_prompt_context.py` — Cap 2 plan-slimming helper
+- [x] All tests passing (`pytest backend/tests/` — 38 passed)
 
 ### Remaining / in-progress
 - [ ] Notify Person C whenever `models.py` changes (ongoing contract per PRD §15.3)
 - [x] Error handling review — confirm 400 and 502 responses match PRD §9 spec exactly
-- [x] Code frozen (Sunday midday) — freeze after pytest + any final bugfixes
+- [x] Code frozen (Sunday midday) — freeze after pytest + Cap 2 TPM prompt slim bugfix
 - [x] Bob sessions — 4 screenshots in `bob_sessions/abdullah/` (meets ≥3 requirement)
 
 ---
@@ -63,11 +65,11 @@
 ### Prompts
 - [x] `backend/prompts/prd_to_sprints.md` — system + user template for Capability 1
 - [x] `backend/prompts/sprint_to_tickets.md` — system + user template for Capability 2
-- [x] `scripts/test_prompt.py` — direct Groq prompt test harness (Cap 1 + Cap 2 passing on `prd-clean`)
+- [x] `scripts/test_prompt.py` — direct Groq prompt test harness (Cap 1 + Cap 2; shares `slim_plan_for_sprint` with the API)
 
 ### Quality & metrics
-- [ ] Run all three sample PRDs through `POST /api/plan/sprints` and check validator output
-- [ ] Run all three sample PRDs through `POST /api/plan/tickets` (at least one sprint per sample)
+- [x] Run all three sample PRDs through `POST /api/plan/sprints` and check validator output (`prd-clean`, `prd-messy`, `prd-vague` — live frontend / Groq)
+- [x] Run all three sample PRDs through `POST /api/plan/tickets` (at least one sprint per sample — live after Cap 2 prompt slim)
 - [ ] Tune `prd_to_sprints.md` until validator warnings are rare
 - [ ] Tune `sprint_to_tickets.md` until validator warnings are rare
 - [x] `docs/metrics.md` — template scaffolded
@@ -195,11 +197,13 @@
 | Validators (Cap 1 + Cap 2) | A | ✅ Complete |
 | Groq TPM fixes (`reasoning_effort`, smoke scripts) | A | ✅ Complete |
 | Bob sessions (Abdullah) | A | ✅ Complete (4) |
-| Validator / route pytest suites | A | ✅ Complete (31 passed) |
+| Validator / route / prompt-context pytest | A | ✅ Complete (38 passed) |
 | Error-handling review + code freeze | A | ✅ Complete |
+| Cap 2 prompt slim (shared with harness) | A | ✅ Complete (`backend/slim-cap2-prompt`) |
 | Prompts (both) + sample PRDs + fixtures | B | ✅ Complete |
-| Prompt test harness (Cap 1 + Cap 2 OK on clean) | B / A | ✅ Complete |
-| Prompt tuning + metrics numbers | B | ⬜ Remaining |
+| Prompt test harness (Cap 1 + Cap 2) | B / A | ✅ Complete (shared slim helper) |
+| Live Cap 1 + Cap 2 on all three samples | A / B | ✅ Complete (clean, messy, vague) |
+| Prompt tuning + metrics numbers | B | ⬜ Remaining (runs done; tune + fill metrics) |
 | Frontend scaffold + types + proxy | C | ✅ Complete (PR #6) |
 | Upload / plan / tickets views + export + real API | C | ✅ Complete |
 | Requirement reassignment between sprints | C | ⬜ Remaining (PRD gap) |
