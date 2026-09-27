@@ -4,147 +4,68 @@
 **Date:** May 2026  
 **Version:** 2.0 — approved for development
 
+> Demo sample: shortened for Groq free-tier ~8k token limits. See `docs/QUICKSTART.md`.
+
 ---
 
 ## 1. Overview
 
-Invoicio is a web application for freelancers and small agencies to create, send, and track invoices. The product replaces ad-hoc spreadsheet and PDF workflows with a structured tool that saves time on repetitive billing and reduces late payments through automated reminders.
+Invoicio is a web app for freelancers and small agencies (1–10 members) to create, send, and track invoices. It replaces spreadsheet/PDF workflows and reduces late payments via automated reminders.
 
-**Target users:** Independent contractors and agencies with 1–10 members billing clients for time-based or fixed-price work.
-
-**Business goal:** Reach 500 active monthly users within 6 months of launch, with a 60-day retention rate above 50%.
+**Business goal:** 500 active monthly users within 6 months; 60-day retention above 50%.
 
 ---
 
 ## 2. User roles
 
-| Role | Description |
-|---|---|
-| **Member** | Creates and sends invoices, manages clients, views their own financial data |
-| **Admin** | All Member permissions plus: invites team members, views team-wide financial dashboard, configures workspace settings |
+- **Member:** create/send invoices, manage clients, view own financial data.
+- **Admin:** all Member permissions plus invite members, team dashboard, workspace settings.
 
-A workspace is created by the first user (who becomes Admin). Admins can invite additional Members by email.
+The first user creates the workspace and becomes Admin. Admins invite Members by email.
 
 ---
 
 ## 3. Core features
 
-### 3.1 Client management
+### Clients
+Each client stores: company name (required), contact name/email (required), billing address (required), VAT (optional), currency (default USD), payment terms in days (default 30). Clients are workspace-scoped.
 
-Members can create and manage a list of clients. Each client record stores:
-- Company name (required)
-- Primary contact name and email (required)
-- Billing address (required for invoice generation)
-- VAT / tax number (optional)
-- Currency (default: USD; per-client override supported)
-- Payment terms in days (default: 30; per-client override supported)
+### Invoices
+Invoices include: auto number `INV-{YYYY}-{sequence}`, issue date (default today), due date (issue + payment terms, editable), line items (description, qty, unit price, tax %), optional flat or % discount, notes. Totals calculated server-side.
 
-Clients are scoped to the workspace and visible to all Members.
+### Lifecycle
+`Draft → Sent → Viewed → Paid` (or `Overdue` / `Void`). Draft is editable; Sent emails PDF + payment link and becomes read-only; Viewed when client opens link; Overdue via daily job when past due and unpaid; Paid set manually (Stripe is Phase 2); Void requires a reason and drops from totals.
 
-### 3.2 Invoice creation
+### PDF & reminders
+On send, backend generates a branded PDF (logo, accent colour) and stores it (not regenerated each view). Reminders: 3 days before due, on due date, 7 days after — if still unpaid; disableable per invoice.
 
-Members create invoices against a client. An invoice contains:
-- Auto-generated invoice number (format: `INV-{YYYY}-{sequence}`, e.g. `INV-2026-0042`)
-- Issue date (defaults to today)
-- Due date (calculated from issue date + client payment terms; editable)
-- Line items: description, quantity, unit price, tax rate (%)
-- Discount: optional flat or percentage discount applied to the subtotal
-- Notes field (plain text, appears on the invoice PDF)
+### Dashboard & settings
+Admins: invoiced/paid/outstanding (month + all time), aging buckets, top 5 clients. Members see own invoices only. Admins configure name, logo (≤2 MB PNG/JPG), accent colour, default currency/terms, invoice prefix.
 
-Totals (subtotal, discount, tax, total due) are calculated server-side from the line items.
-
-### 3.3 Invoice lifecycle
-
-An invoice moves through the following statuses:
-
-```
-Draft → Sent → Viewed → Paid (terminal)
-                      → Overdue (auto, when past due date and unpaid)
-                      → Void (manual, by the Member who created it)
-```
-
-- **Draft:** editable; not visible to the client.
-- **Sent:** triggers an email to the client with a PDF attachment and a payment link. The invoice becomes read-only.
-- **Viewed:** set automatically when the client opens the payment link.
-- **Overdue:** set automatically by a daily background job when `due_date < today` and status is `Sent` or `Viewed`.
-- **Paid:** set manually by the Member (payment is recorded outside the app for now; Stripe integration is Phase 2).
-- **Void:** removes the invoice from all totals; a void reason is required.
-
-### 3.4 PDF generation
-
-When an invoice is sent, the backend generates a PDF using the workspace's branding (logo, accent colour). The PDF is stored and re-served on subsequent views — it is not regenerated on every request.
-
-The PDF layout includes: workspace logo, invoice number, issue and due dates, client details, line items table, totals, notes, and payment instructions.
-
-### 3.5 Payment reminders
-
-Automated email reminders are sent to the client:
-- 3 days before the due date (if the invoice is still `Sent` or `Viewed`)
-- On the due date (if unpaid)
-- 7 days after the due date (if still unpaid and not Void)
-
-Members can disable reminders per invoice. The reminder schedule is not currently configurable per workspace.
-
-### 3.6 Financial dashboard
-
-Admins see a workspace-level dashboard with:
-- Total invoiced, total paid, total outstanding (this month and all time)
-- Outstanding invoices by age bucket: 0–30 days, 31–60 days, 60+ days
-- Top 5 clients by revenue (all time)
-
-Members see the same dashboard scoped to their own invoices only.
-
-### 3.7 Workspace settings
-
-Admins configure:
-- Workspace name and logo (uploaded image, max 2 MB, PNG or JPG)
-- Default accent colour for PDF branding
-- Default currency and payment terms (can be overridden per client)
-- Invoice number prefix (default: `INV`; e.g. change to a company abbreviation)
-
-### 3.8 Authentication
-
-- Email and password registration with email verification.
-- Password reset via email.
-- Session tokens expire after 7 days of inactivity.
-- Google OAuth login is out of scope for this release.
+### Auth
+Email/password with verification and password reset. Sessions expire after 7 days inactivity. Google OAuth out of scope.
 
 ---
 
-## 4. Non-functional requirements
+## 4. Non-functional
 
-| ID | Requirement |
-|---|---|
-| NF1 | All pages must load within 2 seconds on a standard broadband connection. |
-| NF2 | The application must be responsive and usable on screens ≥ 375 px wide. |
-| NF3 | All data in transit must use HTTPS. Passwords are stored as bcrypt hashes. |
-| NF4 | The PDF generation endpoint must return within 5 seconds for invoices with up to 50 line items. |
-| NF5 | The system must support up to 100 concurrent active users without degradation at launch. |
+- Pages load ≤2s on broadband; usable at ≥375px width.
+- HTTPS in transit; passwords bcrypt-hashed.
+- PDF endpoint ≤5s for ≤50 line items; support ~100 concurrent users at launch.
 
 ---
 
-## 5. Out of scope for this release
+## 5. Out of scope
 
-- Online payment collection (Stripe or other gateway) — Phase 2
-- Recurring invoices / subscription billing
-- Expense tracking
-- Multi-currency invoices (a single currency per invoice; the per-client currency setting handles this)
-- Native mobile apps
-- Accounting software integrations (QuickBooks, Xero)
-- Time tracking built into the app
+Stripe payments, recurring invoices, expenses, multi-currency per invoice, native apps, QuickBooks/Xero, time tracking.
 
 ---
 
-## 6. Acceptance criteria (high-level)
+## 6. Acceptance (high-level)
 
-1. A user can register, create a workspace, add a client, create and send an invoice, and download the PDF in under 5 minutes on first use.
-2. A sent invoice's status transitions to `Overdue` automatically within 24 hours of the due date passing.
-3. A client receives the invoice email with a valid PDF attachment within 60 seconds of the Member clicking "Send."
-4. An Admin can invite a Member, who can accept the invitation and log in within the same session.
-5. The financial dashboard totals match the sum of the underlying invoice records (verifiable via export).
-
----
-
-## 7. Data export
-
-All invoice and client data is exportable by Admins as CSV. The export includes: invoice number, client, issue date, due date, status, subtotal, tax, total, paid date (if set).
+1. Register → workspace → client → send invoice → download PDF in under 5 minutes.
+2. Sent invoices become Overdue within 24h of due date passing.
+3. Client gets email + valid PDF within 60s of Send.
+4. Admin invite → Member accepts and logs in.
+5. Dashboard totals match underlying invoices.
+6. Admins can export invoices/clients as CSV.

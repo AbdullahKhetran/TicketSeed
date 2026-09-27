@@ -3,6 +3,8 @@
 Captured by Person B on Sunday midday, using the three sample PRDs.  
 These numbers go into the demo slides (section 18 of the PRD) and the video narration.
 
+> The files in `samples/` are **shortened for the hackathon demo** so Cap 1 / Cap 2 fit Groq free-tier ~8k TPM limits. See `docs/QUICKSTART.md` (“Sample PRD size”).
+
 ---
 
 ## How to capture

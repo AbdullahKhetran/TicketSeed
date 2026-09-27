@@ -25,7 +25,7 @@ ticketseed/
 ├── docs/
 │   └── PRD-ticketseed.md  ← full spec, read before coding anything
 ├── samples/
-│   ├── prd-clean.md
+│   ├── prd-clean.md           ← demo PRDs (shortened for Groq free-tier ~8k TPM)
 │   ├── prd-vague.md
 │   ├── prd-messy.md
 │   └── fixtures/

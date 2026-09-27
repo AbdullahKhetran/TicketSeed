@@ -110,6 +110,9 @@ def _call_groq(system: str, user: str) -> str:
         "model": model,
         "temperature": 0.2,
         "max_tokens": 4096,
+        # gpt-oss burns completion budget on reasoning; "low" leaves room for JSON
+        # without raising max_tokens / TPM.
+        "reasoning_effort": "low",
         "messages": [
             {"role": "system", "content": system},
             {"role": "user", "content": user},
@@ -139,20 +142,64 @@ def _call_groq(system: str, user: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Schema injection
+# Schema injection / plan trimming (free-tier TPM)
 # ---------------------------------------------------------------------------
 
 
+def _slim_plan_for_sprint(plan: dict, sprint_id: str) -> dict:
+    """
+    Keep only the target sprint, earlier sprints as stubs, and related requirements.
+    Cuts Cap 2 prompt size so Groq free-tier ~8k TPM can accept the request.
+    """
+    sprints = plan.get("sprints") or []
+    target = next((s for s in sprints if s.get("id") == sprint_id), None)
+    if target is None:
+        raise SystemExit(f"Sprint id {sprint_id!r} not found in plan.")
+
+    target_order = int(target.get("order", 0))
+    kept_sprints: list[dict] = []
+    for s in sprints:
+        order = int(s.get("order", 0))
+        if s.get("id") == sprint_id:
+            kept_sprints.append(s)
+        elif order < target_order:
+            # Stub earlier sprints — enough context to avoid duplicating their work
+            kept_sprints.append({
+                "id": s.get("id"),
+                "order": order,
+                "name": s.get("name"),
+                "goal": s.get("goal"),
+                "requirement_ids": s.get("requirement_ids") or [],
+                "deliverables": [],
+                "depends_on": s.get("depends_on") or [],
+                "rationale": "",
+            })
+
+    needed_req_ids = set(target.get("requirement_ids") or [])
+    for s in kept_sprints:
+        needed_req_ids.update(s.get("requirement_ids") or [])
+
+    requirements = [r for r in (plan.get("requirements") or []) if r.get("id") in needed_req_ids]
+
+    return {
+        "project": plan.get("project") or {},
+        "requirements": requirements,
+        "sprints": kept_sprints,
+        "client_questions": [],
+    }
+
+
 def _inject_schema(template: str, capability: int, plan_json: str | None, sprint_id: str | None, prd: str) -> str:
+    # Compact schema (no indent) — fewer tokens, same information
     if capability == 1:
-        schema = json.dumps(SprintPlan.model_json_schema(), indent=2)
+        schema = json.dumps(SprintPlan.model_json_schema(), separators=(",", ":"))
         return (
             template
             .replace("{{PRD_MARKDOWN}}", prd)
             .replace("{{JSON_SCHEMA}}", schema)
         )
     else:
-        schema = json.dumps(TicketList.model_json_schema(), indent=2)
+        schema = json.dumps(TicketList.model_json_schema(), separators=(",", ":"))
         return (
             template
             .replace("{{PRD_MARKDOWN}}", prd)
@@ -230,7 +277,10 @@ def main() -> None:
     plan_json: str | None = None
     if args.capability == 2:
         plan_path = args.plan or (ROOT / "samples" / "fixtures" / "sprint-plan.example.json")
-        plan_json = plan_path.read_text(encoding="utf-8")
+        plan = json.loads(plan_path.read_text(encoding="utf-8"))
+        slim = _slim_plan_for_sprint(plan, args.sprint_id)
+        plan_json = json.dumps(slim, separators=(",", ":"))
+        print(f"Plan     : {plan_path} (slimmed to {args.sprint_id} + earlier stubs)")
 
     # Load prompt
     prompt_file = PROMPT_DIR / ("prd_to_sprints.md" if args.capability == 1 else "sprint_to_tickets.md")
