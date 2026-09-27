@@ -1,0 +1,8 @@
+# Runtime dependencies for the Vercel Python function.
+# Kept next to api/ so the Python builder always finds them (root copy remains for local pip).
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+httpx>=0.27.0
+python-dotenv>=1.0.0
+truststore>=0.10.0

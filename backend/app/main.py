@@ -9,9 +9,13 @@ Environment variables are loaded from .env (python-dotenv).
 
 from __future__ import annotations
 
-from dotenv import load_dotenv
+# Local .env loading only. On Vercel, env vars come from the project settings.
+try:
+    from dotenv import load_dotenv
 
-load_dotenv()  # load .env before anything else reads os.environ
+    load_dotenv()
+except ImportError:
+    pass
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
