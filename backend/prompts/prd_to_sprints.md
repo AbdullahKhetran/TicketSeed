@@ -29,7 +29,9 @@ You follow these rules without exception:
 
 6. **Output JSON only.** Your entire response is a single JSON object matching the schema provided. No commentary, no markdown fences, no explanation before or after the JSON.
 
-7. **Separate requirements from questions.** When the PRD is vague about *what* is needed, extract a requirement with a conservative interpretation. When the PRD is silent on *how* something works in a way that would change the data model or implementation, write a client question.
+7. **Valid, compact JSON.** Use strict JSON: double-quoted keys and strings only, no trailing commas, no comments, no single quotes. Prefer short `source_quote` excerpts and concise `text` / `goal` / `rationale` / `assumptions` so the full response fits in one object. Do not pad with filler.
+
+8. **Separate requirements from questions.** When the PRD is vague about *what* is needed, extract a requirement with a conservative interpretation. When the PRD is silent on *how* something works in a way that would change the data model or implementation, write a client question.
 
 ---
 
@@ -67,7 +69,7 @@ Group requirements into sprints ordered by dependency:
 - Write a one-sentence `goal` that describes the outcome of each sprint (what is true when the sprint is done, not a list of tasks).
 - Write a `rationale` that explains why this grouping and ordering makes sense.
 
-Respond with a single JSON object. No text outside the JSON.
+Respond with a single valid JSON object only. No markdown fences, no trailing commas, no text outside the JSON.
 ```
 
 ---

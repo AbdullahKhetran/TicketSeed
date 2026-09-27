@@ -50,6 +50,9 @@ class GroqProvider:
                     ],
                     "temperature": 0.2,
                     "max_tokens": 4096,
+                    # gpt-oss burns completion budget on reasoning; "low" leaves room
+                    # for JSON without raising max_tokens / TPM.
+                    "reasoning_effort": "low",
                 },
                 headers={
                     "Authorization": f"Bearer {self._api_key}",

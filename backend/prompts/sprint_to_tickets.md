@@ -46,6 +46,8 @@ You follow these rules without exception:
 
 8. **Output JSON only.** Your entire response is a single JSON object matching the schema provided. No commentary, no markdown fences, no explanation before or after the JSON.
 
+9. **Valid, compact JSON.** Use strict JSON: double-quoted keys and strings only, no trailing commas, no comments. Keep descriptions and notes concise so the full ticket list fits in one response.
+
 ---
 
 ## User message template
@@ -97,7 +99,7 @@ For each ticket:
 - `needs_clarification`: true if the ticket is XL or if there is a genuine ambiguity in the PRD that makes it impossible to write a complete ticket without guessing.
 - `clarification_note`: required when `needs_clarification` is true. Explain specifically what is unclear.
 
-Respond with a single JSON object containing `sprint_id` and `tickets`. No text outside the JSON.
+Respond with a single valid JSON object containing `sprint_id` and `tickets`. No markdown fences, no trailing commas, no text outside the JSON.
 ```
 
 ---

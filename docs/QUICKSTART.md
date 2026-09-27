@@ -171,6 +171,16 @@ curl -X POST http://localhost:8000/api/plan/tickets \
 
 Sample PRDs are available in [`samples/`](../samples/) — use them as realistic test inputs.
 
+### Sample PRD size (hackathon / free tier)
+
+The three files in `samples/` (`prd-clean.md`, `prd-messy.md`, `prd-vague.md`) are **intentionally shortened** for the hackathon demo.
+
+Groq’s free tier enforces a low tokens-per-minute (TPM) budget (~**8k** for our model). Capability 2 sends the PRD plus the sprint plan and schema in one request, so long client PRDs easily exceed that limit (`413` / rate limit). Shorter samples keep Cap 1 and Cap 2 runnable without raising TPM or upgrading the plan.
+
+`scripts/test_prompt.py` Cap 2 also **slims the sprint plan** to the target sprint (plus stubs of earlier sprints) for the same reason.
+
+In production you can accept longer PRDs (up to `MAX_PRD_CHARS`); these samples are demo fixtures, not a product limit.
+
 ---
 
 ## 8 — Common issues
@@ -181,6 +191,7 @@ Sample PRDs are available in [`samples/`](../samples/) — use them as realistic
 | `KeyError: 'GROQ_API_KEY'` | `.env` file is missing or the variable name is wrong — check against section 2 above |
 | `401 Unauthorized` from Groq | API key is invalid or expired — regenerate it at [console.groq.com](https://console.groq.com) |
 | `ValueError: LLM_PROVIDER is not set` | `LLM_PROVIDER` is missing from `.env` — add `LLM_PROVIDER=groq` |
+| `413` / TPM rate limit from Groq | Request too large for free tier — use the shortened `samples/` PRDs; wait a minute and retry |
 | `502` from `/api/plan/sprints` | The LLM returned invalid JSON twice. Check `uvicorn` logs for the raw response |
 | Frontend shows blank page or CORS error | Make sure both servers are running and the Vite proxy is configured (`/api` → `localhost:8000`) |
 | `pytest` not found | Virtual environment is not activated — run `.venv\Scripts\Activate.ps1` (Windows) or `source .venv/bin/activate` (macOS/Linux) |
