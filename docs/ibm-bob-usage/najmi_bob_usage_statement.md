@@ -50,5 +50,3 @@ Bob's assistance was most critical at three junctures:
 3. **Building the entire React frontend** in a single coherent pass, ensuring TypeScript types mirrored the Pydantic models exactly and all API calls used relative paths compatible with both the Vite dev proxy and Vercel's production routing.
 
 ---
-
-*Word count: ~480 words*
