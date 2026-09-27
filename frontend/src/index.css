@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-[#1f2328] font-sans;
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent text-white px-4 py-2 rounded-md font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-surface border border-border text-[#1f2328] px-4 py-2 rounded-md font-medium text-sm hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply text-muted px-3 py-1.5 rounded-md text-sm hover:bg-surface transition-colors;
+  }
+  .card {
+    @apply bg-white border border-border rounded-lg;
+  }
+  .input-field {
+    @apply border border-border rounded-md px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent;
+  }
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+  .badge-functional {
+    @apply badge bg-blue-50 text-blue-700;
+  }
+  .badge-non_functional {
+    @apply badge bg-purple-50 text-purple-700;
+  }
+  .badge-feature {
+    @apply badge bg-green-50 text-green-700;
+  }
+  .badge-task {
+    @apply badge bg-blue-50 text-blue-700;
+  }
+  .badge-chore {
+    @apply badge bg-gray-100 text-gray-600;
+  }
+  .badge-spike {
+    @apply badge bg-yellow-50 text-yellow-700;
+  }
+  .badge-high {
+    @apply badge bg-red-50 text-red-700;
+  }
+  .badge-medium {
+    @apply badge bg-orange-50 text-orange-700;
+  }
+  .badge-low {
+    @apply badge bg-gray-100 text-gray-500;
+  }
+  .badge-XS { @apply badge bg-gray-100 text-gray-600; }
+  .badge-S  { @apply badge bg-green-50 text-green-700; }
+  .badge-M  { @apply badge bg-yellow-50 text-yellow-700; }
+  .badge-L  { @apply badge bg-orange-50 text-orange-700; }
+  .badge-XL { @apply badge bg-red-50 text-red-700; }
+  .badge-warning {
+    @apply badge bg-yellow-50 text-yellow-800;
+  }
+  .badge-error {
+    @apply badge bg-red-50 text-red-700;
+  }
+}
