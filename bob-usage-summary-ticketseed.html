@@ -1,0 +1,178 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bob Usage Summary — TicketSeed</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #ffffff;
+    color: #1f2328;
+    padding: 32px 16px 48px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #57606a; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #57606a; margin: 28px 0 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 6px 10px; background: #f7f8fa; border: 1px solid #e5e7eb; color: #57606a; font-weight: 600; }
+  td { padding: 7px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f8fa; }
+  .tag {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #e5e7eb;
+    color: #1f2328;
+    white-space: nowrap;
+  }
+  .tag.backend  { background: #dbeafe; color: #1e40af; }
+  .tag.frontend { background: #d1fae5; color: #065f46; }
+  .tag.prompts  { background: #ede9fe; color: #4c1d95; }
+  .stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 4px; }
+  .stat { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 18px; flex: 1 1 140px; }
+  .stat .val { font-size: 22px; font-weight: 700; color: #3b82d4; }
+  .stat .lbl { font-size: 12px; color: #57606a; margin-top: 2px; }
+  footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bob Usage Summary — TicketSeed</h1>
+  <p class="subtitle">All recorded Bob task sessions across the team · Workspace: TicketSeed / SpecSync</p>
+
+  <h2>At a Glance</h2>
+  <div class="stat-row">
+    <div class="stat"><div class="val">8</div><div class="lbl">Total task sessions</div></div>
+    <div class="stat"><div class="val">3</div><div class="lbl">Team members using Bob</div></div>
+    <div class="stat"><div class="val">~49</div><div class="lbl">Bobcoins spent</div></div>
+    <div class="stat"><div class="val">4</div><div class="lbl">Distinct task types</div></div>
+  </div>
+
+  <h2>Session Log</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Person</th>
+        <th>Task</th>
+        <th>Area</th>
+        <th>Context used</th>
+        <th>Bobcoins</th>
+        <th>Outcome</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>01</td>
+        <td>Abdullah</td>
+        <td>Backend scaffold — author <code>models.py</code>, kick off backend structure per AGENTS.md + PRD</td>
+        <td><span class="tag backend">Backend</span></td>
+        <td>12% (31.6k)</td>
+        <td>0.96</td>
+        <td>Backend bootstrapped, models written</td>
+      </tr>
+      <tr>
+        <td>02</td>
+        <td>Abdullah</td>
+        <td>PR Reviewer — review open branch-to-main PR; merge if clear</td>
+        <td><span class="tag backend">Backend</span></td>
+        <td>10% (27.2k)</td>
+        <td>0.60</td>
+        <td>PR reviewed and merged</td>
+      </tr>
+      <tr>
+        <td>03</td>
+        <td>Abdullah</td>
+        <td>Fix backend — diagnose venv/pip/uvicorn startup errors on Windows</td>
+        <td><span class="tag backend">Backend</span></td>
+        <td>3% (7.8k)</td>
+        <td>19.31</td>
+        <td>Environment issues resolved, backend running</td>
+      </tr>
+      <tr>
+        <td>04</td>
+        <td>Abdullah</td>
+        <td>Create Pull Request — open PR for completed backend work</td>
+        <td><span class="tag backend">Backend</span></td>
+        <td>31% (83.5k)</td>
+        <td>10.20</td>
+        <td>PR created via Bob workflow</td>
+      </tr>
+      <tr>
+        <td>05</td>
+        <td>Sergiu</td>
+        <td>Prompts &amp; fixtures — read PRD, generate all sample files, prompts, and metrics template (8/8 todos)</td>
+        <td><span class="tag prompts">Prompts</span></td>
+        <td>20% (55.0k)</td>
+        <td>2.30</td>
+        <td>All 8 deliverables completed</td>
+      </tr>
+      <tr>
+        <td>06</td>
+        <td>Sergiu</td>
+        <td>Create Pull Request — branch + PR for Person B deliverables (4/4 todos)</td>
+        <td><span class="tag prompts">Prompts</span></td>
+        <td>28% (76.0k)</td>
+        <td>8.21</td>
+        <td>PR raised for prompts/person-b-initial-deliverables</td>
+      </tr>
+      <tr>
+        <td>07</td>
+        <td>Najmi</td>
+        <td>Frontend implementation — "implement the frontend, do nothing else" (Person C)</td>
+        <td><span class="tag frontend">Frontend</span></td>
+        <td>23% (62.7k)</td>
+        <td>3.39</td>
+        <td>Full React/TS/Tailwind frontend scaffolded</td>
+      </tr>
+      <tr>
+        <td>08</td>
+        <td>Najmi</td>
+        <td>Frontend implementation (continued, same task) — context grew, task still running</td>
+        <td><span class="tag frontend">Frontend</span></td>
+        <td>25% (68.1k)</td>
+        <td>4.17</td>
+        <td>10/10 todos completed, PR open</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>What Bob Was Used For</h2>
+  <table>
+    <thead>
+      <tr><th>Use case</th><th>Sessions</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Code generation &amp; scaffolding</td><td>3</td><td>Backend models/routes, full frontend, Vercel entry point</td></tr>
+      <tr><td>Pull request creation &amp; review</td><td>3</td><td>Bob's built-in PR workflow used each time</td></tr>
+      <tr><td>Content / asset generation</td><td>1</td><td>Sample PRDs, fixture JSON, LLM prompt files, metrics template</td></tr>
+      <tr><td>Debugging / environment fix</td><td>1</td><td>Windows venv path errors for pip + uvicorn</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Context Breakdown (sample — Session 08)</h2>
+  <table>
+    <thead>
+      <tr><th>Component</th><th>Tokens</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Messages (conversation)</td><td>54,300</td></tr>
+      <tr><td>Tool definitions</td><td>6,600</td></tr>
+      <tr><td>System prompt</td><td>4,000</td></tr>
+      <tr><td>Rules</td><td>2,500</td></tr>
+      <tr><td>Skills</td><td>582</td></tr>
+      <tr><td><strong>Total (25% of 270k window)</strong></td><td><strong>~68,100</strong></td></tr>
+    </tbody>
+  </table>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>
